@@ -13,11 +13,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Set up Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install axios
+        run: npm install axios
+
       - name: Fetch and format news content
         id: fetch_news
         run: |
           echo "Fetching news content..."
-          
+
           raw_content=$(curl -s -m 10 "https://api.03c3.cn/api/zb?type=text")
 
           formatted_content=$(echo "$raw_content" | sed 's/$/<br\/>/g')
@@ -46,45 +54,60 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Send news content via Pushplus with retries
+      - name: Send news content via Pushplus
+        if: ${{ secrets.PUSHPLUS_TOKEN != '' }}
         run: |
-          echo "Sending news content via Pushplus with retries..."
-          CONTENT="${{ env.FORMATTED_CONTENT }}"
-          PUSHPLUS_URL="https://www.pushplus.plus/send"
-          PUSHPLUS_TOKEN="${{ secrets.PUSHPLUS_TOKEN }}"
-          RETRY_COUNT=0
-          MAX_RETRIES=3
-          SUCCESS=false
+          node -e "
+            const axios = require('axios');
+            const content = '${{ env.FORMATTED_CONTENT }}';
+            const TOKEN = '${{ secrets.PUSHPLUS_TOKEN }}';
+            axios.post('http://www.pushplus.plus/send/', {
+              token: TOKEN,
+              title: '每天60秒读懂世界',
+              content: content,
+              template: 'markdown'
+            }).then(response => {
+              console.log(response.data.msg || 'Pushplus 推送成功');
+            }).catch(error => {
+              console.error('Pushplus 推送失败: ' + error);
+              process.exit(1);
+            });
+          "
 
-          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-            echo "Attempt $((RETRY_COUNT + 1))..."
-            RESPONSE=$(curl -s -m 10 -o response.json -w "%{http_code}" -X POST "$PUSHPLUS_URL" \
-              -H "Content-Type: application/json" \
-              -d '{
-                "token": "'"$PUSHPLUS_TOKEN"'",
-                "title": "每天60秒读懂世界",
-                "content": "'"$(echo "$CONTENT" | sed 's/"/\\"/g')"'",
-                "template": "html"
-              }')
+      - name: Send news content via ServerChan
+        if: ${{ secrets.SERVERCHAN_SCKEY != '' }}
+        run: |
+          node -e "
+            const axios = require('axios');
+            const content = '${{ env.FORMATTED_CONTENT }}';
+            const SCKEY = '${{ secrets.SERVERCHAN_SCKEY }}';
+            axios.post(`https://sctapi.ftqq.com/${SCKEY}.send`, {
+              title: '每天60秒读懂世界',
+              desp: content
+            }).then(response => {
+              console.log(response.data.msg || 'Server酱 推送成功');
+            }).catch(error => {
+              console.error('Server酱 推送失败: ' + error);
+              process.exit(1);
+            });
+          "
 
-            HTTP_STATUS=$(echo "$RESPONSE" | tail -n1)
-            echo "HTTP Status: $HTTP_STATUS"
-            cat response.json
-
-            if [ "$HTTP_STATUS" -eq 200 ]; then
-              echo "Pushplus request successful."
-              SUCCESS=true
-              break
-            else
-              echo "Pushplus request failed with status $HTTP_STATUS. Retrying..."
-              RETRY_COUNT=$((RETRY_COUNT + 1))
-              sleep 5
-            fi
-          done
-
-          if [ "$SUCCESS" = false ]; then
-            echo "Pushplus request failed after $MAX_RETRIES attempts."
-            exit 1
-          fi
-        env:
-          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+      - name: Send news content via WeChat Bot
+        if: ${{ secrets.WECHAT_BOT_URL != '' }}
+        run: |
+          node -e "
+            const axios = require('axios');
+            const content = '${{ env.FORMATTED_CONTENT }}';
+            const WECHAT_BOT_URL = '${{ secrets.WECHAT_BOT_URL }}';
+            axios.post(WECHAT_BOT_URL, {
+              msgtype: 'markdown',
+              markdown: {
+                content: content
+              }
+            }).then(response => {
+              console.log(response.data.errmsg || '企业微信 BOT 推送成功');
+            }).catch(error => {
+              console.error('企业微信 BOT 推送失败: ' + error);
+              process.exit(1);
+            });
+          "
