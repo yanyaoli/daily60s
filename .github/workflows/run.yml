@@ -57,10 +57,9 @@ jobs:
       - name: Set environment variables
         run: |
           echo "Setting environment variables..."
-        env:
-          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
-          SERVERCHAN_SCKEY: ${{ secrets.SERVERCHAN_SCKEY }}
-          WECHAT_BOT_URL: ${{ secrets.WECHAT_BOT_URL }}
+          echo "PUSHPLUS_TOKEN=${{ secrets.PUSHPLUS_TOKEN }}" >> $GITHUB_ENV
+          echo "SERVERCHAN_SCKEY=${{ secrets.SERVERCHAN_SCKEY }}" >> $GITHUB_ENV
+          echo "WECHAT_BOT_URL=${{ secrets.WECHAT_BOT_URL }}" >> $GITHUB_ENV
 
       - name: Send news content via Pushplus
         run: |
