@@ -28,8 +28,7 @@ jobs:
 
           raw_content=$(curl -s -m 10 "https://api.03c3.cn/api/zb?type=text")
 
-          formatted_content=$(echo "$raw_content" | sed 's/$/<br\/>/g')
-          formatted_content="${formatted_content}<br/><img src=\"https://api.03c3.cn/api/zb\" />"
+          formatted_content=$(echo "$raw_content" | sed 's/$/\n/g')
 
           echo -e "$formatted_content" > DailyNews.md
           echo "Formatted content saved to DailyNews.md"
