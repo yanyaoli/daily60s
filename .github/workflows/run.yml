@@ -66,7 +66,7 @@ jobs:
           if [ -n "${{ env.PUSHPLUS_TOKEN }}" ]; then
             node -e "
               const axios = require('axios');
-              const content = '${{ env.FORMATTED_CONTENT }}';
+              const content = \`${{ env.FORMATTED_CONTENT }}\`;
               const TOKEN = '${{ env.PUSHPLUS_TOKEN }}';
               axios.post('http://www.pushplus.plus/send/', {
                 token: TOKEN,
@@ -87,7 +87,7 @@ jobs:
           if [ -n "${{ env.SERVERCHAN_SCKEY }}" ]; then
             node -e "
               const axios = require('axios');
-              const content = '${{ env.FORMATTED_CONTENT }}';
+              const content = \`${{ env.FORMATTED_CONTENT }}\`;
               const SCKEY = '${{ env.SERVERCHAN_SCKEY }}';
               axios.post(\`https://sctapi.ftqq.com/${SCKEY}.send\`, {
                 title: '每天60秒读懂世界',
@@ -106,7 +106,7 @@ jobs:
           if [ -n "${{ env.WECHAT_BOT_URL }}" ]; then
             node -e "
               const axios = require('axios');
-              const content = '${{ env.FORMATTED_CONTENT }}';
+              const content = \`${{ env.FORMATTED_CONTENT }}\`;
               const WECHAT_BOT_URL = '${{ env.WECHAT_BOT_URL }}';
               axios.post(WECHAT_BOT_URL, {
                 msgtype: 'markdown',
