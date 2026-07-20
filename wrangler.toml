@@ -1,0 +1,13 @@
+name = "daily60s"
+main = "src/index.js"
+compatibility_date = "2024-12-01"
+
+[triggers]
+crons = ["30 0 * * *"]  # 每天北京时间 08:30（UTC 00:30）
+
+[vars]
+API_URL = "https://60s-api-cf.114128.xyz/v2/60s"
+TITLE = "每天60秒读懂世界"
+
+[env.production]
+vars = { ENV = "production" }

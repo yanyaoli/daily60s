@@ -1,6 +1,0 @@
-{
-    "news_api": "https://api.lolimi.cn/60/",
-    "news_api_backup": "https://api.southerly.top/api/60s?format=json",
-    "image_api": "https://api.03c3.cn/api/zb",
-    "image_api_backup": "https://api.southerly.top/api/60s?format=image"
-}
